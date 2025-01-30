@@ -1,8 +1,9 @@
 from st7735 import TFT
 from st7735 import sysfont
-from machine import SPI,Pin,ADC, 
+from machine import SPI,Pin,ADC
 import network
 import time
+import _thread
 import math
 
 def showNetworks():
@@ -34,6 +35,65 @@ def displayTemp():
     tft.text((0, x), 'Core: ' + str(temperature) + 'C', TFT.GREEN, font, 1, nowrap=True)
 
 
+class SubieObd:
+    def __init__(self,tft:TFT) -> None: 
+        self.tft = tft
+        self.starting = False
+
+        self.font = sysfont.sysfont
+        self.fontHeight = self.font["Height"]
+        self.fontHeight2 = self.fontHeight * 2
+        self.fontHeight3 = self.fontHeight * 3
+        self.fontHeight4 = self.fontHeight * 4
+        self.fontHeight5 = self.fontHeight * 5
+
+        self.connected = False
+        self.sLock = _thread.allocate_lock()
+
+        self.version = '0.1'
+        pass
+
+    def clearScreen(self):
+        tft.fill(TFT.BLACK)
+
+    def startUpScreen(self):
+        self.clearScreen()
+        self.tft.text((0, 0), 'Subie OBD', TFT.RED, self.font, 3, nowrap=True)
+        self.tft.text((0, self.fontHeight3), 'Starting up', TFT.GREEN, self.font, 2, nowrap=True)
+        self.tft.text((0, 128 - self.fontHeight), 'Version: ' + self.version, TFT.GREEN, self.font, 1, nowrap=True)
+
+
+    def startUpAnimation(self):
+        while self.isStarting():
+            self.tft.fillrect((0, self.fontHeight3*2), ( 160,  self.fontHeight3), TFT.BLACK)
+            self.tft.text((0, self.fontHeight3*2), '...', TFT.GREEN, self.font, 2, nowrap=True)
+            time.sleep(0.5)
+            self.tft.fillrect((0, self.fontHeight3*2), ( 160,  self.fontHeight3), TFT.BLACK)
+            self.tft.text((0, self.fontHeight3*2), '..', TFT.GREEN, self.font, 2, nowrap=True)
+            time.sleep(0.5)
+
+    def start(self):
+       self.startUpScreen()
+       self.starting = True
+       _thread.start_new_thread(self.startUpAnimation,())
+       self.connect()
+       
+       if self.connected:
+           self.starting = False
+           self.clearScreen()
+
+    
+    def isStarting (self):
+        return self.starting
+
+    def connect(self):
+        time.sleep(2)
+        self.connected = True
+
+    
+
+
+    
 if __name__ == "__main__":
     spi = SPI(0, baudrate=20000000, polarity=0, phase=0,
               sck=Pin(6), mosi=Pin(7), miso=None)
@@ -41,9 +101,6 @@ if __name__ == "__main__":
     tft.rotation(1)
     tft.initr()
     tft.rgb(True)
-    while True:
-        showNetworks()
-        time.sleep(5)
-        displayTemp()
-        time.sleep(5)
 
+    subie = SubieObd(tft)
+    subie.start()
