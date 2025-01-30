@@ -36,9 +36,14 @@ def displayTemp():
 
 
 class SubieObd:
-    def __init__(self,tft:TFT) -> None: 
+    def __init__(self,tft:TFT, widgets = False) -> None: 
         self.tft = tft
         self.starting = False
+        self.mainpage = False
+
+        self.widgets = []
+        if widgets == False:
+            self.defaultWidgets()
 
         self.font = sysfont.sysfont
         self.fontHeight = self.font["Height"]
@@ -71,29 +76,69 @@ class SubieObd:
             self.tft.fillrect((0, self.fontHeight3*2), ( 160,  self.fontHeight3), TFT.BLACK)
             self.tft.text((0, self.fontHeight3*2), '..', TFT.GREEN, self.font, 2, nowrap=True)
             time.sleep(0.5)
+        _thread.exit()
 
     def start(self):
        self.startUpScreen()
        self.starting = True
        _thread.start_new_thread(self.startUpAnimation,())
        self.connect()
-       
        if self.connected:
            self.starting = False
            self.clearScreen()
+           self.mainpage = True
+           self.mainPageLoop()
 
     
     def isStarting (self):
         return self.starting
 
     def connect(self):
-        time.sleep(2)
+        time.sleep(1)
         self.connected = True
 
-    
+    def mainPageLoop(self):
+        self.displayData()
+        updatedData = False
+        while self.mainpage:
+            if updatedData != True:
+                time.sleep_ms(250)
+                continue
+            self.displayData()
+            time.sleep_ms(250)
+
+    def displayData(self):
+        self.clearScreen()
+        self.tft.text((0, 0), 'Subie OBD v' + self.version, TFT.RED, self.font, 1, nowrap=True)
+
+        widgetHeight = self.fontHeight + 2
+
+        if (self.widgets == []):
+            self.tft.text((0, widgetHeight), "No Widgets Set", TFT.RED, self.font, 2, nowrap=True)
+            widgetHeight += self.fontHeight2 + 1
 
 
+        if (self.connected == False):
+            self.tft.text((0, widgetHeight), "Not Connected", TFT.RED, self.font, 2, nowrap=True)
+            widgetHeight += self.fontHeight2 + 1
+
+
+        for widget in self.widgets:
+            self.tft.text((0, widgetHeight), widget['title']+': 0', TFT.GREEN, self.font, 2, nowrap=True)
+            widgetHeight += self.fontHeight2 + 1
+
+
+    def defaultWidgets(self):
+        self.addWidget('Speed', 'speed')
+        self.addWidget('RPM', 'rpm')
+        self.addWidget('Coolant', 'coolant')
+        self.addWidget('Voltage', 'voltage')
+
+
+    def addWidget(self, title, key):
+        self.widgets.append({'title': title, 'key': key})
     
+
 if __name__ == "__main__":
     spi = SPI(0, baudrate=20000000, polarity=0, phase=0,
               sck=Pin(6), mosi=Pin(7), miso=None)
