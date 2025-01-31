@@ -37,7 +37,7 @@ def displayTemp():
 
 class SubieObd:
     def __init__(self,tft:TFT, widgets = False) -> None: 
-        self.version = '0.2'
+        self.version = '0.3'
 
         self.tft = tft
         self.starting = False
@@ -49,7 +49,6 @@ class SubieObd:
         
         self.data = {}
         self.updatedData = False
-
         self.font = sysfont.sysfont
         self.fontHeight = self.font["Height"]
         self.fontHeight2 = self.fontHeight * 2
@@ -112,35 +111,50 @@ class SubieObd:
             self.updatedData = False
             time.sleep_ms(250)
 
+    def calculateWidgetHeight(self,h):
+        return len(self.widgets) * h  + len(self.widgets)
+
+
     def displayWidgets(self):
         self.clearScreen()
         self.tft.text((0, 0), 'Subie OBD v' + self.version, TFT.RED, self.font, 1, nowrap=True)
 
         widgetHeight = self.fontHeight + 2
 
+        height = self.fontHeight2
+        heightNum = 2
+
         if (self.widgets == []):
             self.tft.text((0, widgetHeight), "No Widgets Set", TFT.RED, self.font, 2, nowrap=True)
             widgetHeight += self.fontHeight2 + 1
 
+        if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
+            height = self.fontHeight
+            heightNum = 1
+            if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
+                print('Too many widgets')
+
         if (self.connected == False):
-            self.tft.text((0, widgetHeight), "Not Connected", TFT.RED, self.font, 2, nowrap=True)
-            widgetHeight += self.fontHeight2 + 1
+            self.tft.text((0, widgetHeight), "Not Connected", TFT.RED, self.font, heightNum, nowrap=True)
+            widgetHeight += height + 1
 
         for widget in self.widgets:
-            self.tft.text((0, widgetHeight), widget['title']+': ', TFT.GREEN, self.font, 2, nowrap=True)
-            widgetHeight += self.fontHeight2 + 1
+            self.tft.text((0, widgetHeight), widget['title']+': ', TFT.GREEN, self.font, heightNum, nowrap=True)
+            widgetHeight += height + 1
 
     def displayData(self):
-        self.tft.text((0, 0), 'Subie OBD v' + self.version, TFT.RED, self.font, 1, nowrap=True)
-
         widgetHeight = self.fontHeight + 2
-
-        if (self.widgets == []):
-            self.tft.text((0, widgetHeight), "No Widgets Set", TFT.RED, self.font, 2, nowrap=True)
-            widgetHeight += self.fontHeight2 + 1
+        
+        height = self.fontHeight2
+        heightNum = 2
+       
+        if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
+            height = self.fontHeight
+            heightNum = 1
+            if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
+                print('Too many widgets')
 
         if (self.connected == False):
-            self.tft.text((0, widgetHeight), "Not Connected", TFT.RED, self.font, 2, nowrap=True)
             widgetHeight += self.fontHeight2 + 1
 
         for widget in self.widgets:
@@ -149,14 +163,17 @@ class SubieObd:
                 dat = self.data[widget['key']]
             except KeyError:
                 dat = 'N/A'
-            x = (len(widget['title']) + 2) * self.font["Width"] * 2
-            self.tft.fillrect((x, widgetHeight), (160, self.fontHeight2), TFT.BLACK)
-            self.tft.text((x, widgetHeight),  str(dat) , TFT.GREEN, self.font, 2, nowrap=True)
-            widgetHeight += self.fontHeight2 + 1
+            x = (len(widget['title']) + 2) * self.font["Width"] * heightNum
+            self.tft.fillrect((x, widgetHeight), (160, height), TFT.BLACK)
+            self.tft.text((x, widgetHeight),  str(dat) , TFT.GREEN, self.font, heightNum, nowrap=True)
+            widgetHeight += height + 1
 
         
 
     def updateData(self):
+        # This is where the data would be updated from the OBD2 interface
+
+        # For now, we will just generate random data
         self.data = {'speed':  random.randint(0,120), 'rpm': random.randint(0,6000), 'coolant': random.randint(0,140), 'voltage': random.randint(0,14)}
         self.updatedData = True
 
@@ -165,7 +182,10 @@ class SubieObd:
         self.addWidget('RPM', 'rpm')
         self.addWidget('Coolant', 'coolant')
         self.addWidget('Voltage', 'voltage')
-
+        self.addWidget('Distance', 'distance')
+        self.addWidget('Time', 'time')
+        self.addWidget('Fuel', 'fuel')
+        self.addWidget('Throttle', 'throttle')
 
     def addWidget(self, title, key):
         self.widgets.append({'title': title, 'key': key})
