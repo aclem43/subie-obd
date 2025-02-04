@@ -5,6 +5,7 @@ import network
 import time
 import _thread
 import random
+from widget import Widget
 
 def showNetworks():
     font = sysfont.sysfont
@@ -35,6 +36,7 @@ def displayTemp():
     tft.text((0, x), 'Core: ' + str(temperature) + 'C', TFT.GREEN, font, 1, nowrap=True)
 
 
+
 class SubieObd:
     def __init__(self,tft:TFT, widgets = False) -> None: 
         self.version = '0.3'
@@ -43,7 +45,7 @@ class SubieObd:
         self.starting = False
         self.mainpage = False
 
-        self.widgets = []
+        self.widgets: list[Widget] = []
         if widgets == False:
             self.defaultWidgets()
         
@@ -139,7 +141,7 @@ class SubieObd:
             widgetHeight += height + 1
 
         for widget in self.widgets:
-            self.tft.text((0, widgetHeight), widget['title']+': ', TFT.GREEN, self.font, heightNum, nowrap=True)
+            self.tft.text((0, widgetHeight), widget.getTitle()+': ', TFT.GREEN, self.font, heightNum, nowrap=True)
             widgetHeight += height + 1
 
     def displayData(self):
@@ -160,12 +162,12 @@ class SubieObd:
         for widget in self.widgets:
             dat = 'Error'
             try:
-                dat = self.data[widget['key']]
+                dat = self.data[widget.getKey()]
             except KeyError:
                 dat = 'N/A'
-            x = (len(widget['title']) + 2) * self.font["Width"] * heightNum
+            x = (len(widget.getTitle()) + 2) * self.font["Width"] * heightNum
             self.tft.fillrect((x, widgetHeight), (160, height), TFT.BLACK)
-            self.tft.text((x, widgetHeight),  str(dat) , TFT.GREEN, self.font, heightNum, nowrap=True)
+            self.tft.text((x, widgetHeight),  str(dat) , widget.getColor(dat), self.font, heightNum, nowrap=True)
             widgetHeight += height + 1
 
         
@@ -173,22 +175,28 @@ class SubieObd:
     def updateData(self):
         # This is where the data would be updated from the OBD2 interface
 
-        # For now, we will just generate random data
+        # For now, it will just generate random data
         self.data = {'speed':  random.randint(0,120), 'rpm': random.randint(0,6000), 'coolant': random.randint(0,140), 'voltage': random.randint(0,14)}
         self.updatedData = True
 
     def defaultWidgets(self):
-        self.addWidget('Speed', 'speed')
-        self.addWidget('RPM', 'rpm')
-        self.addWidget('Coolant', 'coolant')
-        self.addWidget('Voltage', 'voltage')
-        self.addWidget('Distance', 'distance')
-        self.addWidget('Time', 'time')
-        self.addWidget('Fuel', 'fuel')
-        self.addWidget('Throttle', 'throttle')
+        speedWidget = Widget('Speed', 'speed')
+        speedWidget.setColorValues(0, 60, 80, 100, 120)
+        self.addWidget(speedWidget)
+        rpmWidget = Widget('RPM', 'rpm')
+        rpmWidget.setColorValues(0, 1000, 3000, 4000, 4500)
+        self.addWidget(rpmWidget)
+        coolantWidget = Widget('Coolant', 'coolant')
+        coolantWidget.setColorValues(0, 80, 100, 120, 140)
+        self.addWidget(coolantWidget)
+        voltageWidget = Widget('Voltage', 'voltage')
+        voltageWidget.setColorValues(0, 11, 12, 13, 14)
+        self.addWidget(voltageWidget)
 
-    def addWidget(self, title, key):
-        self.widgets.append({'title': title, 'key': key})
+
+
+    def addWidget(self, w:Widget):
+        self.widgets.append(w)
     
 
 if __name__ == "__main__":
