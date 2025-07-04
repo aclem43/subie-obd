@@ -1,211 +1,37 @@
-from st7735 import TFT
-from st7735 import sysfont
-from machine import SPI,Pin,ADC
-import network
-import time
-import _thread
-import random
-from widget import Widget
 
-def showNetworks():
-    font = sysfont.sysfont
-    wlan = network.WLAN(network.STA_IF)
-    nets = wlan.scan()
-    tft.fill(TFT.BLACK)
-    tft.text((0, 0), 'Networks', TFT.RED, font, 1, nowrap=True)
-    x = font["Height"]
-    for net in nets:
-        x=  x + 1 + font["Height"]
-        ssid = str(net[0].decode("utf-8"))
-        if (ssid == ''):
-            ssid = 'No SSID'
-        tft.text((0, x),ssid , TFT.GREEN, font, 1, nowrap=True)
+from lib.LCD_1inch28 import LCD_1inch28
+from lib.Touch_CST816T import Touch_CST816T
 
+size = 240  # Size of the LCD in pixels (240x240 for 1.28 inch display)
+center = size // 2  # Center point of the LCD
 
-def displayTemp():
-    adcpin = 4
-    sensor = ADC(adcpin)
-    adc_value = sensor.read_u16()
-    volt = (3.3/65535)*adc_value
-    temperature = 27 - (volt - 0.706)/0.001721  
+class SubieOBD(object):
+    def __init__(self):
+        self.version = '0.4'
+        self.LCD = LCD_1inch28()
+        self.LCD.set_bl_pwm(65535)  # Set backlight brightness
 
-    font = sysfont.sysfont
-    tft.fill(TFT.BLACK)
-    tft.text((0, 0), 'Temperature', TFT.RED, font, 1, nowrap=True)
-    x = font["Height"]
-    tft.text((0, x), 'Core: ' + str(temperature) + 'C', TFT.GREEN, font, 1, nowrap=True)
+        self.Touch = Touch_CST816T(mode=1, LCD=self.LCD)  # Initialize touch with mode 1
 
-
-
-class SubieObd:
-    def __init__(self,tft:TFT, widgets = False) -> None: 
-        self.version = '0.3'
-
-        self.tft = tft
-        self.starting = False
-        self.mainpage = False
-
-        self.widgets: list[Widget] = []
-        if widgets == False:
-            self.defaultWidgets()
+    def run(self):
+        self.startUp()
         
-        self.data = {}
-        self.updatedData = False
-        self.font = sysfont.sysfont
-        self.fontHeight = self.font["Height"]
-        self.fontHeight2 = self.fontHeight * 2
-        self.fontHeight3 = self.fontHeight * 3
-        self.fontHeight4 = self.fontHeight * 4
-        self.fontHeight5 = self.fontHeight * 5
+    def startUp(self):
+        self.clear()
+        self.LCD.write_text("Subie OBD", center - self.getTextWidth("Subie OBD", size=2) // 2, center - self.getTextHeight(size=2) // 2, size=2, color=self.LCD.white)
+        self.LCD.show()
 
-        self.connected = False
-        self.sLock = _thread.allocate_lock()
-
-
-    def clearScreen(self):
-        tft.fill(TFT.BLACK)
-
-    def startUpScreen(self):
-        self.clearScreen()
-        self.tft.text((0, 0), 'Subie OBD', TFT.RED, self.font, 3, nowrap=True)
-        self.tft.text((0, self.fontHeight3), 'Starting up', TFT.GREEN, self.font, 2, nowrap=True)
-        self.tft.text((0, 128 - self.fontHeight), 'Version: ' + self.version, TFT.GREEN, self.font, 1, nowrap=True)
-
-
-    def startUpAnimation(self):
-        while self.isStarting():
-            self.tft.fillrect((0, self.fontHeight3*2), ( 160,  self.fontHeight3), TFT.BLACK)
-            self.tft.text((0, self.fontHeight3*2), '...', TFT.GREEN, self.font, 2, nowrap=True)
-            time.sleep(0.5)
-            self.tft.fillrect((0, self.fontHeight3*2), ( 160,  self.fontHeight3), TFT.BLACK)
-            self.tft.text((0, self.fontHeight3*2), '..', TFT.GREEN, self.font, 2, nowrap=True)
-            time.sleep(0.5)
-        _thread.exit()
-
-    def start(self):
-       self.startUpScreen()
-       self.starting = True
-       _thread.start_new_thread(self.startUpAnimation,())
-       self.connect()
-       if self.connected:
-           self.starting = False
-           self.clearScreen()
-           self.mainpage = True
-           self.mainPageLoop()
-
+    def getTextWidth(self, text, size=1):
+        return len(text) * 8 * size
     
-    def isStarting (self):
-        return self.starting
-
-    def connect(self):
-        time.sleep(1)
-        self.connected = True
-
-    def mainPageLoop(self):
-        self.displayWidgets()
-        self.updatedData = False
-        while self.mainpage:
-            self.updateData()
-            if self.updatedData != True:
-                time.sleep_ms(250)
-                continue
-            self.displayData()
-            self.updatedData = False
-            time.sleep_ms(250)
-
-    def calculateWidgetHeight(self,h):
-        return len(self.widgets) * h  + len(self.widgets)
+    def getTextHeight(self, size=1):
+        return 8 * size
 
 
-    def displayWidgets(self):
-        self.clearScreen()
-        self.tft.text((0, 0), 'Subie OBD v' + self.version, TFT.RED, self.font, 1, nowrap=True)
+    def clear(self):
+        self.LCD.fill(self.LCD.black)
+        self.LCD.show()
 
-        widgetHeight = self.fontHeight + 2
-
-        height = self.fontHeight2
-        heightNum = 2
-
-        if (self.widgets == []):
-            self.tft.text((0, widgetHeight), "No Widgets Set", TFT.RED, self.font, 2, nowrap=True)
-            widgetHeight += self.fontHeight2 + 1
-
-        if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
-            height = self.fontHeight
-            heightNum = 1
-            if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
-                print('Too many widgets')
-
-        if (self.connected == False):
-            self.tft.text((0, widgetHeight), "Not Connected", TFT.RED, self.font, heightNum, nowrap=True)
-            widgetHeight += height + 1
-
-        for widget in self.widgets:
-            self.tft.text((0, widgetHeight), widget.getTitle()+': ', TFT.GREEN, self.font, heightNum, nowrap=True)
-            widgetHeight += height + 1
-
-    def displayData(self):
-        widgetHeight = self.fontHeight + 2
-        
-        height = self.fontHeight2
-        heightNum = 2
-       
-        if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
-            height = self.fontHeight
-            heightNum = 1
-            if (self.calculateWidgetHeight(height) > 128 - widgetHeight):
-                print('Too many widgets')
-
-        if (self.connected == False):
-            widgetHeight += self.fontHeight2 + 1
-
-        for widget in self.widgets:
-            dat = 'Error'
-            try:
-                dat = self.data[widget.getKey()]
-            except KeyError:
-                dat = 'N/A'
-            x = (len(widget.getTitle()) + 2) * self.font["Width"] * heightNum
-            self.tft.fillrect((x, widgetHeight), (160, height), TFT.BLACK)
-            self.tft.text((x, widgetHeight),  str(dat) , widget.getColor(dat), self.font, heightNum, nowrap=True)
-            widgetHeight += height + 1
-
-        
-
-    def updateData(self):
-        # This is where the data would be updated from the OBD2 interface
-
-        # For now, it will just generate random data
-        self.data = {'speed':  random.randint(0,120), 'rpm': random.randint(0,6000), 'coolant': random.randint(0,140), 'voltage': random.randint(0,14)}
-        self.updatedData = True
-
-    def defaultWidgets(self):
-        speedWidget = Widget('Speed', 'speed')
-        speedWidget.setColorValues(0, 60, 80, 100, 120)
-        self.addWidget(speedWidget)
-        rpmWidget = Widget('RPM', 'rpm')
-        rpmWidget.setColorValues(0, 1000, 3000, 4000, 4500)
-        self.addWidget(rpmWidget)
-        coolantWidget = Widget('Coolant', 'coolant')
-        coolantWidget.setColorValues(0, 80, 100, 120, 140)
-        self.addWidget(coolantWidget)
-        voltageWidget = Widget('Voltage', 'voltage')
-        voltageWidget.setColorValues(0, 11, 12, 13, 14)
-        self.addWidget(voltageWidget)
-
-
-
-    def addWidget(self, w:Widget):
-        self.widgets.append(w)
-    
-
-if __name__ == "__main__":
-    spi = SPI(0, baudrate=20000000, polarity=0, phase=0,
-              sck=Pin(6), mosi=Pin(7), miso=None)
-    tft=TFT(spi,11,10,12)
-    tft.rotation(1)
-    tft.initr()
-    tft.rgb(True)
-
-    subie = SubieObd(tft)
-    subie.start()
+if __name__=='__main__':
+    main = SubieOBD()
+    main.run()  # Run the main application
