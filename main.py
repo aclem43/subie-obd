@@ -8,6 +8,7 @@ from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, ARC_UPDATE_RATE
 # Import page functions
 from pages.temp_page import temp_page, temp_partial_update
 from pages.battery_page import battery_page, battery_partial_update
+from pages.info_page import info_page
 
 
 class SubieOBD(object):
@@ -19,6 +20,7 @@ class SubieOBD(object):
         self.pages = [
             lambda: temp_page(self.LCD),
             lambda: battery_page(self.LCD, self.write_centered_text),
+            lambda: info_page(self.LCD, self.version),  # Add info page as last page
         ]
         self.page_index = 0
         self.arc_update_counter = 0

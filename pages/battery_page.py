@@ -1,11 +1,10 @@
-from utils import getTextWidth, getTextHeight, center
+from utils import getTextWidth, getTextHeight, center, wrap_text
 from sensors import getBattery
 from config import BATTERY_GOOD, BATTERY_MIN, BATTERY_MAX
 
 
 def battery_page(LCD, write_centered_text):
     voltage = getBattery()
-    # Determine status and color
     if voltage < BATTERY_MIN:
         status = "Battery Low"
         color = LCD.red
@@ -16,8 +15,19 @@ def battery_page(LCD, write_centered_text):
         status = "Battery Safe"
         color = LCD.green
 
+    # Use wrap_text for header/status
+    header_lines = wrap_text(status, size=2, max_width=200)
     y = 60
-    y = write_centered_text(status, y, size=2, color=LCD.white, max_width=200)
+    for line in header_lines:
+        LCD.write_text(
+            line,
+            center - getTextWidth(line, 2) // 2,
+            y,
+            size=2,
+            color=LCD.white,
+        )
+        y += getTextHeight(2) + 4
+
     LCD.write_text(
         "{:.2f} V".format(voltage),
         center - getTextWidth("{:.2f} V".format(voltage), 3) // 2,
