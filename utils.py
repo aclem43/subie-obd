@@ -1,5 +1,7 @@
-size = 240  # LCD size
-center = size // 2
+from config import DISPLAY_SIZE, DISPLAY_CENTER
+
+size = DISPLAY_SIZE
+center = DISPLAY_CENTER
 
 
 def getTextWidth(text, size=1):

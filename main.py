@@ -1,13 +1,13 @@
 from lib.LCD_1inch28 import LCD_1inch28
 from lib.Touch_CST816T import Touch_CST816T, Gesture_CST816T
 import time
-import random
 from utils import getTextWidth, getTextHeight, size, center
 from sensors import getTemp, getBattery
+from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, ARC_UPDATE_RATE
 
 # Import page functions
-from pages.temp_page import temp_page
-from pages.battery_page import battery_page
+from pages.temp_page import temp_page, temp_partial_update
+from pages.battery_page import battery_page, battery_partial_update
 
 
 class SubieOBD(object):
@@ -21,6 +21,8 @@ class SubieOBD(object):
             lambda: battery_page(self.LCD, self.write_centered_text),
         ]
         self.page_index = 0
+        self.arc_update_counter = 0
+        self.arc_update_rate = ARC_UPDATE_RATE
 
     def run(self):
         self.startUp()
@@ -29,13 +31,12 @@ class SubieOBD(object):
         self.show_page()
         last_gesture = None
         last_time = time.ticks_ms()
-        debounce_ms = 400  # Debounce time in milliseconds
+        debounce_ms = DEBOUNCE_MS
 
         while True:
             gesture = self.Touch.getGesture()
             now = time.ticks_ms()
             if gesture in (Gesture_CST816T.UP, Gesture_CST816T.DOWN):
-                # Only act if gesture changed and debounce time passed
                 if (
                     gesture != last_gesture
                     or time.ticks_diff(now, last_time) > debounce_ms
@@ -51,7 +52,7 @@ class SubieOBD(object):
             else:
                 last_gesture = None  # Reset if no gesture
                 self.show_page()
-            time.sleep_ms(150)  # reduce flicker
+            time.sleep_ms(PAGE_UPDATE_INTERVAL_MS)  # reduce flicker
 
     def startUp(self):
         self.clear()
@@ -151,54 +152,10 @@ class SubieOBD(object):
             # Only update the dynamic value, not the whole page
             if self.page_index == 0:
                 # Update only the temperature value
-                temp = getTemp()
-                if temp < 60:
-                    temp_color = self.LCD.blue
-                elif temp < 90:
-                    temp_color = self.LCD.green
-                elif temp < 105:
-                    temp_color = (
-                        self.LCD.brown
-                        if hasattr(self.LCD, "brown")
-                        else self.LCD.yellow
-                    )
-                else:
-                    temp_color = self.LCD.red
-                self.LCD.fill_rect(
-                    0,
-                    100,
-                    size,
-                    getTextHeight(size=3),
-                    self.LCD.black,
-                )
-                self.LCD.write_text(
-                    "{:.1f} C".format(temp),
-                    center - getTextWidth("{:.1f} C".format(temp), 3) // 2,
-                    100,
-                    size=3,
-                    color=temp_color,
-                )
-                self.LCD.show()
+                temp_partial_update(self.LCD)
             elif self.page_index == 1:
                 # Update only the battery value
-                voltage = getBattery()
-                color = self.LCD.green if voltage > 12.0 else self.LCD.red
-                y = self.get_battery_value_y()
-                self.LCD.fill_rect(
-                    0,
-                    y,
-                    size,
-                    getTextHeight(size=3),
-                    self.LCD.black,
-                )
-                self.LCD.write_text(
-                    "{:.2f} V".format(voltage),
-                    center - getTextWidth("{:.2f} V".format(voltage), 3) // 2,
-                    y,
-                    size=3,
-                    color=color,
-                )
-                self.LCD.show()
+                battery_partial_update(self.LCD, self.write_centered_text)
 
     def page_temp(self):
         temp = getTemp()

@@ -1,6 +1,5 @@
 from machine import ADC
-
-dev = True
+from config import DEV_MODE
 
 lastTemp = 0.0
 lastVolt = 12.0
@@ -8,7 +7,7 @@ lastVolt = 12.0
 
 def getTemp():
     global lastTemp
-    if dev:
+    if DEV_MODE:
         t = lastTemp + 0.5
         if t > 110.0:
             t = 20.0
@@ -24,7 +23,7 @@ def getTemp():
 
 def getBattery():
     global lastVolt
-    if dev:
+    if DEV_MODE:
         t = lastVolt + 0.1
         if t > 15.0:
             t = 11.0
