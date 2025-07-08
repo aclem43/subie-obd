@@ -65,7 +65,18 @@ class Touch_CST816T(object):
         time.sleep_ms(50)
 
     # Set mode  设置模式
+
     def Set_Mode(self, mode, callback_time=10, rest_time=5):
+        """
+        Sets the operating mode of the CST816T touch controller.
+        Args:
+            mode (int): The desired mode to set.
+                - 0: Gestures mode
+                - 1: Point mode
+                - 2: Mixed mode
+            callback_time (int, optional): Time in milliseconds for callback interval. Default is 10.
+            rest_time (int, optional): Time in milliseconds for rest interval. Default is 5.
+        """
         # mode = 0 gestures mode
         # mode = 1 point mode
         # mode = 2 mixed mode
@@ -88,6 +99,13 @@ class Touch_CST816T(object):
 
         self.X_point = x_point
         self.Y_point = y_point
+
+    def getGesture(self):
+        g = None
+        if self.Gestures != None:
+            g = self.Gestures
+            self.Gestures = None
+        return g
 
     # Gesture  手势
     def Touch_Gesture(self):
