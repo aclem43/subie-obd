@@ -37,12 +37,19 @@ class LCD_1inch28(framebuf.FrameBuffer):
         self.white = 0xFFFF
         self.black = 0x0000
         self.brown = 0x8430
+        self.yellow = 0xFFE0
+        self.orange = 0xFD20
+        self.cyan = 0x07FF
 
         self.fill(self.white)  # Clear screen  清屏
         self.show()  # Show  显示
 
         self.pwm = PWM(Pin(LCDPin.BL))
         self.pwm.freq(5000)  # Turn on the backlight  开背光
+
+    def custom_color(self, r, g, b):  # Custom color  自定义颜色
+        """Convert RGB to BRG format"""
+        return (b << 11) | (g << 5) | r
 
     def write_cmd(self, cmd):  # Write command  写命令
         self.cs(1)
