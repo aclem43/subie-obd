@@ -3,7 +3,7 @@ from lib.Touch_CST816T import Touch_CST816T, Gesture_CST816T
 import time
 from utils import getTextWidth, getTextHeight, size, center
 from sensors import getTemp, getBattery
-from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, ARC_UPDATE_RATE
+from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, PAGE_FULL_UPDATE_INTERVAL_MS
 
 # Import page functions
 from pages.temp_page import temp_page, temp_partial_update
@@ -13,7 +13,7 @@ from pages.info_page import info_page
 
 class SubieOBD(object):
     def __init__(self):
-        self.version = "0.5"
+        self.version = "0.6"
         self.LCD = LCD_1inch28()
         self.LCD.set_bl_pwm(65535)
         self.Touch = Touch_CST816T(mode=0, LCD=self.LCD)
@@ -23,8 +23,7 @@ class SubieOBD(object):
             lambda: info_page(self.LCD, self.version),  # Add info page as last page
         ]
         self.page_index = 0
-        self.arc_update_counter = 0
-        self.arc_update_rate = ARC_UPDATE_RATE
+        self.last_full_update = 0  # Track last full update time
 
     def run(self):
         self.startUp()
@@ -118,29 +117,6 @@ class SubieOBD(object):
             y = self.write_centered_text(line2, y, size, color, max_width, dry_run)
             return y
 
-    def page_battery(self):
-        voltage = getBattery()
-        color = self.LCD.green if voltage > 12.0 else self.LCD.red
-        y = 60
-        y = self.write_centered_text(
-            "Battery Voltage", y, size=2, color=self.LCD.white, max_width=200
-        )
-        self.LCD.write_text(
-            "{:.2f} V".format(voltage),
-            center - getTextWidth("{:.2f} V".format(voltage), 3) // 2,
-            y,
-            size=3,
-            color=color,
-        )
-        self.LCD.write_text(
-            "Swipe Up/Down",
-            center - getTextWidth("Swipe Up/Down", 1) // 2,
-            200,
-            size=1,
-            color=self.LCD.white,
-        )
-        self.LCD.show()
-
     def show_page(self):
         # Only redraw the page if the index has changed
         if not hasattr(self, "_last_page_index"):
@@ -150,49 +126,23 @@ class SubieOBD(object):
             self.clear()
             self.pages[self.page_index]()
             self._last_page_index = self.page_index
+            self.last_full_update = time.ticks_ms()  # Reset full update timer
+        # Check if it's time for a full page update
+        current_time = time.ticks_ms()
+        if (current_time - self.last_full_update) > PAGE_FULL_UPDATE_INTERVAL_MS:
+            # Perform a full page update
+            self.clear()
+            self.pages[self.page_index]()
+            self.last_full_update = current_time
         else:
             # Only update the dynamic value, not the whole page
             if self.page_index == 0:
                 # Update only the temperature value
+
                 temp_partial_update(self.LCD)
             elif self.page_index == 1:
                 # Update only the battery value
                 battery_partial_update(self.LCD, self.write_centered_text)
-
-    def page_temp(self):
-        temp = getTemp()
-        # Set color based on temperature thresholds
-        if temp < 60:
-            temp_color = self.LCD.blue  # Cold
-        elif temp < 90:
-            temp_color = self.LCD.green  # Normal/Good
-        elif temp < 105:
-            temp_color = self.LCD.yellow  # High (use yellow or brown)
-        else:
-            temp_color = self.LCD.red  # Danger
-
-        self.LCD.write_text(
-            "Coolant Temp",
-            center - getTextWidth("Coolant Temp", 2) // 2,
-            60,
-            size=2,
-            color=self.LCD.white,
-        )
-        self.LCD.write_text(
-            "{:.1f} C".format(temp),
-            center - getTextWidth("{:.1f} C".format(temp), 3) // 2,
-            100,
-            size=3,
-            color=temp_color,
-        )
-        self.LCD.write_text(
-            "Swipe Up/Down",
-            center - getTextWidth("Swipe Up/Down", 1) // 2,
-            200,
-            size=1,
-            color=self.LCD.white,
-        )
-        self.LCD.show()
 
     def clear(self):
         self.LCD.fill(self.LCD.black)

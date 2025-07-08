@@ -4,12 +4,9 @@ DISPLAY_CENTER = DISPLAY_SIZE // 2
 BACKGROUND_COLOR = 0x0000  # Black
 
 # Debounce and timing
-DEBOUNCE_MS = 400
+DEBOUNCE_MS = 500
 PAGE_UPDATE_INTERVAL_MS = 150
-
-# Arc/bar settings
-ARC_THICKNESS = 14
-ARC_UPDATE_RATE = 10  # How often to redraw arc (cycles)
+PAGE_FULL_UPDATE_INTERVAL_MS = 5000
 
 # Sensor simulation/dev mode
 DEV_MODE = True

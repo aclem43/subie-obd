@@ -27,7 +27,7 @@ def temp_page(LCD):
     elif temp < TEMP_GOOD:
         temp_color = LCD.green  # Normal/Good
     elif temp < TEMP_HIGH:
-        temp_color = LCD.yellow if hasattr(LCD, "yellow") else LCD.white  # High
+        temp_color = LCD.yellow
     else:
         temp_color = LCD.red  # Danger
 
@@ -74,7 +74,7 @@ def temp_partial_update(LCD):
     elif temp < TEMP_GOOD:
         temp_color = LCD.green
     elif temp < TEMP_HIGH:
-        temp_color = LCD.yellow if hasattr(LCD, "yellow") else LCD.white
+        temp_color = LCD.yellow
     else:
         temp_color = LCD.red
 

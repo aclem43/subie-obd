@@ -37,9 +37,11 @@ class LCD_1inch28(framebuf.FrameBuffer):
         self.white = 0xFFFF
         self.black = 0x0000
         self.brown = 0x8430
-        self.yellow = 0xFFE0
-        self.orange = 0xFD20
-        self.cyan = 0x07FF
+        self.yellow = 0x07FF
+        self.orange = 0x07E0
+        self.cyan = 0xFC1F
+        self.brown = 0x0340
+        self.purple = 0xF81F
 
         self.fill(self.white)  # Clear screen  清屏
         self.show()  # Show  显示

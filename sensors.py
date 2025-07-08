@@ -8,7 +8,7 @@ lastVolt = 12.0
 def getTemp():
     global lastTemp
     if DEV_MODE:
-        t = lastTemp + 0.5
+        t = lastTemp + 1
         if t > 110.0:
             t = 20.0
         lastTemp = t
