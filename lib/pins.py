@@ -1,4 +1,5 @@
 class LCDPin:
+    # Display Pins
     I2C_SDA = 6
     I2C_SCL = 7
     I2C_INT = 17

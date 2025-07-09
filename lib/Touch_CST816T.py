@@ -3,6 +3,7 @@ import framebuf
 import time
 from lib.LCD_1inch28 import LCD_1inch28
 from lib.pins import LCDPin
+from lib.colours import Colour
 
 
 # Touch drive  触摸驱动
@@ -111,39 +112,39 @@ class Touch_CST816T(object):
     def Touch_Gesture(self):
         self.Mode = 0
         self.Set_Mode(self.Mode)
-        self.LCD.write_text("Gesture test", 70, 90, 1, self.LCD.black)
-        self.LCD.write_text("Complete as prompted", 35, 120, 1, self.LCD.black)
+        self.LCD.write_text("Gesture test", 70, 90, 1, Colour.black)
+        self.LCD.write_text("Complete as prompted", 35, 120, 1, Colour.black)
         self.LCD.show()
         time.sleep(1)
-        self.LCD.fill(self.LCD.white)
+        self.LCD.fill(Colour.white)
         while self.Gestures != 0x01:
-            self.LCD.fill(self.LCD.white)
-            self.LCD.write_text("UP", 100, 110, 3, self.LCD.black)
+            self.LCD.fill(Colour.white)
+            self.LCD.write_text("UP", 100, 110, 3, Colour.black)
             self.LCD.show()
 
         while self.Gestures != 0x02:
-            self.LCD.fill(self.LCD.white)
-            self.LCD.write_text("DOWN", 70, 110, 3, self.LCD.black)
+            self.LCD.fill(Colour.white)
+            self.LCD.write_text("DOWN", 70, 110, 3, Colour.black)
             self.LCD.show()
 
         while self.Gestures != 0x03:
-            self.LCD.fill(self.LCD.white)
-            self.LCD.write_text("LEFT", 70, 110, 3, self.LCD.black)
+            self.LCD.fill(Colour.white)
+            self.LCD.write_text("LEFT", 70, 110, 3, Colour.black)
             self.LCD.show()
 
         while self.Gestures != 0x04:
-            self.LCD.fill(self.LCD.white)
-            self.LCD.write_text("RIGHT", 60, 110, 3, self.LCD.black)
+            self.LCD.fill(Colour.white)
+            self.LCD.write_text("RIGHT", 60, 110, 3, Colour.black)
             self.LCD.show()
 
         while self.Gestures != 0x0C:
-            self.LCD.fill(self.LCD.white)
-            self.LCD.write_text("Long Press", 40, 110, 2, self.LCD.black)
+            self.LCD.fill(Colour.white)
+            self.LCD.write_text("Long Press", 40, 110, 2, Colour.black)
             self.LCD.show()
 
         while self.Gestures != 0x0B:
-            self.LCD.fill(self.LCD.white)
-            self.LCD.write_text("Double Click", 25, 110, 2, self.LCD.black)
+            self.LCD.fill(Colour.white)
+            self.LCD.write_text("Double Click", 25, 110, 2, Colour.black)
             self.LCD.show()
 
     def Int_Callback(self, pin):

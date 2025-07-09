@@ -4,6 +4,8 @@ import time
 from utils import getTextWidth, getTextHeight, size, center
 from sensors import getTemp, getBattery
 from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, PAGE_FULL_UPDATE_INTERVAL_MS
+from lib.colours import Colour
+
 
 # Import page functions
 from pages.temp_page import temp_page, temp_partial_update
@@ -61,14 +63,18 @@ class SubieOBD(object):
         width = getTextWidth(text, size=2)
         h = getTextHeight(size=2)
         self.LCD.write_text(
-            text, center - width // 2, center - h // 2, size=2, color=self.LCD.red
+            text,
+            center - width // 2,
+            center - h // 2,
+            size=2,
+            color=Colour.red,  # <-- Use Colour.red
         )
         self.LCD.write_text(
             "V" + self.version,
             center - getTextWidth("V" + self.version, size=1) // 2,
             center + getTextHeight(size=1) // 2 + h,
             size=1,
-            color=self.LCD.white,
+            color=Colour.white,  # <-- Use Colour.white
         )
         self.LCD.show()
 
@@ -79,7 +85,7 @@ class SubieOBD(object):
             "Battery Voltage",
             y,
             size=2,
-            color=self.LCD.white,
+            color=Colour.white,  # <-- Use Colour.white
             max_width=200,
             dry_run=True,
         )
@@ -93,7 +99,7 @@ class SubieOBD(object):
         If dry_run is True, only calculates and returns the next y without drawing.
         """
         if color is None:
-            color = self.LCD.white
+            color = Colour.white  # <-- Use Colour.white
         text_width = getTextWidth(text, size)
         if text_width <= max_width:
             if not dry_run:
@@ -145,7 +151,7 @@ class SubieOBD(object):
                 battery_partial_update(self.LCD, self.write_centered_text)
 
     def clear(self):
-        self.LCD.fill(self.LCD.black)
+        self.LCD.fill(Colour.black)  # <-- Use Colour.black
         self.LCD.show()
 
 

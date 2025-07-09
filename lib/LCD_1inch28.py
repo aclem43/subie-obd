@@ -2,6 +2,7 @@ from machine import Pin, SPI, PWM
 import framebuf
 import time
 from lib.pins import LCDPin
+from lib.colours import Colour  # Import Colour class
 
 
 # LCD Driver  LCD驱动
@@ -30,20 +31,7 @@ class LCD_1inch28(framebuf.FrameBuffer):
         super().__init__(self.buffer, self.width, self.height, framebuf.RGB565)
         self.init_display()
 
-        # Define color, Micropython fixed to BRG format  定义颜色，Micropython固定为BRG格式
-        self.red = 0x07E0
-        self.green = 0x001F
-        self.blue = 0xF800
-        self.white = 0xFFFF
-        self.black = 0x0000
-        self.brown = 0x8430
-        self.yellow = 0x07FF
-        self.orange = 0x07E0
-        self.cyan = 0xFC1F
-        self.brown = 0x0340
-        self.purple = 0xF81F
-
-        self.fill(self.white)  # Clear screen  清屏
+        self.fill(Colour.white)  # Use Colour class
         self.show()  # Show  显示
 
         self.pwm = PWM(Pin(LCDPin.BL))

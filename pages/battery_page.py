@@ -1,19 +1,20 @@
 from utils import getTextWidth, getTextHeight, center, wrap_text
 from sensors import getBattery
 from config import BATTERY_GOOD, BATTERY_MIN, BATTERY_MAX
+from lib.colours import Colour
 
 
 def battery_page(LCD, write_centered_text):
     voltage = getBattery()
     if voltage < BATTERY_MIN:
         status = "Battery Low"
-        color = LCD.red
+        color = Colour.red
     elif voltage > BATTERY_MAX:
         status = "Battery High"
-        color = LCD.yellow if hasattr(LCD, "yellow") else LCD.white
+        color = Colour.yellow
     else:
         status = "Battery Safe"
-        color = LCD.green
+        color = Colour.green
 
     # Use wrap_text for header/status
     header_lines = wrap_text(status, size=2, max_width=200)
@@ -24,7 +25,7 @@ def battery_page(LCD, write_centered_text):
             center - getTextWidth(line, 2) // 2,
             y,
             size=2,
-            color=LCD.white,
+            color=Colour.white,
         )
         y += getTextHeight(2) + 4
 
@@ -40,7 +41,7 @@ def battery_page(LCD, write_centered_text):
         center - getTextWidth("Swipe Up/Down", 1) // 2,
         200,
         size=1,
-        color=LCD.white,
+        color=Colour.white,
     )
     LCD.show()
 
@@ -49,15 +50,15 @@ def battery_partial_update(LCD, write_centered_text):
     voltage = getBattery()
     # Determine status and color
     if voltage < BATTERY_MIN:
-        color = LCD.red
+        color = Colour.red
     elif voltage > BATTERY_MAX:
-        color = LCD.yellow if hasattr(LCD, "yellow") else LCD.white
+        color = Colour.yellow
     else:
-        color = LCD.green
+        color = Colour.green
 
     y = 60
     y = write_centered_text(
-        "Battery Safe", y, size=2, color=LCD.white, max_width=200, dry_run=True
+        "Battery Safe", y, size=2, color=Colour.white, max_width=200, dry_run=True
     )
     # Clear only the area where the voltage value is drawn
     LCD.fill_rect(
@@ -65,7 +66,7 @@ def battery_partial_update(LCD, write_centered_text):
         y,
         getTextWidth("{:.2f} V".format(voltage), 3) + 8,
         getTextHeight(size=3),
-        LCD.black,
+        Colour.black,
     )
     LCD.write_text(
         "{:.2f} V".format(voltage),
