@@ -5,9 +5,7 @@ from utils import getTextWidth, getTextHeight, size, center
 from sensors import getTemp, getBattery
 from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, PAGE_FULL_UPDATE_INTERVAL_MS
 from lib.colours import Colour
-
-
-# Import page functions
+from pages.combined_page import combined_page, combined_partial_update
 from pages.temp_page import temp_page, temp_partial_update
 from pages.battery_page import battery_page, battery_partial_update
 from pages.info_page import info_page
@@ -15,17 +13,18 @@ from pages.info_page import info_page
 
 class SubieOBD(object):
     def __init__(self):
-        self.version = "0.6"
+        self.version = "0.7.1"
         self.LCD = LCD_1inch28()
         self.LCD.set_bl_pwm(65535)
         self.Touch = Touch_CST816T(mode=0, LCD=self.LCD)
         self.pages = [
             lambda: temp_page(self.LCD),
             lambda: battery_page(self.LCD, self.write_centered_text),
-            lambda: info_page(self.LCD, self.version),  # Add info page as last page
+            lambda: info_page(self.LCD, self.version),
+            lambda: combined_page(self.LCD, self.write_centered_text),
         ]
         self.page_index = 0
-        self.last_full_update = 0  # Track last full update time
+        self.last_full_update = 0
 
     def run(self):
         self.startUp()
@@ -53,9 +52,9 @@ class SubieOBD(object):
                     last_gesture = gesture
                     last_time = now
             else:
-                last_gesture = None  # Reset if no gesture
+                last_gesture = None
                 self.show_page()
-            time.sleep_ms(PAGE_UPDATE_INTERVAL_MS)  # reduce flicker
+            time.sleep_ms(PAGE_UPDATE_INTERVAL_MS)
 
     def startUp(self):
         self.clear()
@@ -67,25 +66,24 @@ class SubieOBD(object):
             center - width // 2,
             center - h // 2,
             size=2,
-            color=Colour.red,  # <-- Use Colour.red
+            color=Colour.red,
         )
         self.LCD.write_text(
             "V" + self.version,
             center - getTextWidth("V" + self.version, size=1) // 2,
             center + getTextHeight(size=1) // 2 + h,
             size=1,
-            color=Colour.white,  # <-- Use Colour.white
+            color=Colour.white,
         )
         self.LCD.show()
 
     def get_battery_value_y(self):
-        # Calculates the y position for the voltage value, matching both initial and update draws
         y = 60
         y = self.write_centered_text(
             "Battery Voltage",
             y,
             size=2,
-            color=Colour.white,  # <-- Use Colour.white
+            color=Colour.white,
             max_width=200,
             dry_run=True,
         )
@@ -94,12 +92,8 @@ class SubieOBD(object):
     def write_centered_text(
         self, text, y, size=1, color=None, max_width=30, dry_run=False
     ):
-        """
-        Writes text centered at y. If it doesn't fit, splits into two lines.
-        If dry_run is True, only calculates and returns the next y without drawing.
-        """
         if color is None:
-            color = Colour.white  # <-- Use Colour.white
+            color = Colour.white
         text_width = getTextWidth(text, size)
         if text_width <= max_width:
             if not dry_run:
@@ -110,9 +104,8 @@ class SubieOBD(object):
                     size=size,
                     color=color,
                 )
-            return y + getTextHeight(size) + 4  # 4px padding
+            return y + getTextHeight(size) + 4
         else:
-            # Split text in half (at nearest space)
             mid = len(text) // 2
             split_idx = text.rfind(" ", 0, mid)
             if split_idx == -1:
@@ -124,34 +117,29 @@ class SubieOBD(object):
             return y
 
     def show_page(self):
-        # Only redraw the page if the index has changed
         if not hasattr(self, "_last_page_index"):
-            self._last_page_index = -1  # Initialize on first call
+            self._last_page_index = -1
 
         if self.page_index != self._last_page_index:
             self.clear()
             self.pages[self.page_index]()
             self._last_page_index = self.page_index
-            self.last_full_update = time.ticks_ms()  # Reset full update timer
-        # Check if it's time for a full page update
+            self.last_full_update = time.ticks_ms()
         current_time = time.ticks_ms()
         if (current_time - self.last_full_update) > PAGE_FULL_UPDATE_INTERVAL_MS:
-            # Perform a full page update
             self.clear()
             self.pages[self.page_index]()
             self.last_full_update = current_time
         else:
-            # Only update the dynamic value, not the whole page
             if self.page_index == 0:
-                # Update only the temperature value
-
                 temp_partial_update(self.LCD)
             elif self.page_index == 1:
-                # Update only the battery value
                 battery_partial_update(self.LCD, self.write_centered_text)
+            elif self.page_index == 3:
+                combined_partial_update(self.LCD, self.write_centered_text)
 
     def clear(self):
-        self.LCD.fill(Colour.black)  # <-- Use Colour.black
+        self.LCD.fill(Colour.black)
         self.LCD.show()
 
 

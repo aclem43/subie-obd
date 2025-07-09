@@ -7,17 +7,14 @@ from lib.colours import Colour
 def battery_page(LCD, write_centered_text):
     voltage = getBattery()
     if voltage < BATTERY_MIN:
-        status = "Battery Low"
         color = Colour.red
     elif voltage > BATTERY_MAX:
-        status = "Battery High"
         color = Colour.yellow
     else:
-        status = "Battery Safe"
         color = Colour.green
 
     # Use wrap_text for header/status
-    header_lines = wrap_text(status, size=2, max_width=200)
+    header_lines = wrap_text("Battery Voltage", size=2, max_width=200)
     y = 60
     for line in header_lines:
         LCD.write_text(
@@ -56,11 +53,7 @@ def battery_partial_update(LCD, write_centered_text):
     else:
         color = Colour.green
 
-    y = 60
-    y = write_centered_text(
-        "Battery Safe", y, size=2, color=Colour.white, max_width=200, dry_run=True
-    )
-    # Clear only the area where the voltage value is drawn
+    y = 60 + getTextHeight(size=2) + getTextHeight(size=2) + 8
     LCD.fill_rect(
         center - getTextWidth("{:.2f} V".format(voltage), 3) // 2 - 4,
         y,
