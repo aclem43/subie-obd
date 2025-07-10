@@ -7,6 +7,7 @@ from config import (
     TEMP_GOOD,
     TEMP_HIGH,
     BACKGROUND_COLOR,
+    TEXT_COLOR,
 )
 from lib.colours import Colour
 from icons.coolantTemp import draw_coolant_icon
@@ -33,7 +34,7 @@ def combined_page(LCD, write_centered_text):
     # Write centered text for header/status
     y = topOffset
     y = write_centered_text(
-        "Battery Voltage", y, size=2, color=Colour.white, max_width=200
+        "Battery Voltage", y, size=2, color=TEXT_COLOR, max_width=200
     )
     y = write_centered_text(
         "{:.2f} V".format(voltage), y, size=3, color=color, max_width=200
@@ -50,7 +51,7 @@ def combined_page(LCD, write_centered_text):
         temp_color = Colour.red
 
     y = write_centered_text(
-        "Coolant Temp", y + 20, size=2, color=Colour.white, max_width=200
+        "Coolant Temp", y + 20, size=2, color=TEXT_COLOR, max_width=200
     )
     y = write_centered_text(
         "{:.1f} C".format(temp), y, size=3, color=temp_color, max_width=200
@@ -60,7 +61,7 @@ def combined_page(LCD, write_centered_text):
         format_time(getTimeSinceBoot()),
         y + 20,
         size=2,
-        color=Colour.white,
+        color=TEXT_COLOR,
         max_width=200,
     )
 
@@ -69,7 +70,7 @@ def combined_page(LCD, write_centered_text):
         center - getTextWidth("Swipe Up/Down", 1) // 2,
         200,
         size=1,
-        color=Colour.white,
+        color=TEXT_COLOR,
     )
     LCD.show()
 
@@ -109,7 +110,7 @@ def combined_partial_update(LCD: LCD_1inch28, write_centered_text):
     y += 20
     LCD.rect(0, y, 240, getTextHeight(2), BACKGROUND_COLOR, True)
     y = write_centered_text(
-        format_time(getTimeSinceBoot()), y, size=2, color=Colour.white, max_width=200
+        format_time(getTimeSinceBoot()), y, size=2, color=TEXT_COLOR, max_width=200
     )
 
     LCD.show()

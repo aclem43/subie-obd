@@ -1,6 +1,6 @@
 from utils import getTextWidth, getTextHeight, center, wrap_text
 from sensors import getBattery
-from config import BATTERY_GOOD, BATTERY_MIN, BATTERY_MAX
+from config import BATTERY_GOOD, BATTERY_MIN, BATTERY_MAX, TEXT_COLOR, BACKGROUND_COLOR
 from lib.colours import Colour
 
 
@@ -22,7 +22,7 @@ def battery_page(LCD, write_centered_text):
             center - getTextWidth(line, 2) // 2,
             y,
             size=2,
-            color=Colour.white,
+            color=TEXT_COLOR,
         )
         y += getTextHeight(2) + 4
 
@@ -38,7 +38,7 @@ def battery_page(LCD, write_centered_text):
         center - getTextWidth("Swipe Up/Down", 1) // 2,
         200,
         size=1,
-        color=Colour.white,
+        color=TEXT_COLOR,
     )
     LCD.show()
 
@@ -59,7 +59,7 @@ def battery_partial_update(LCD, write_centered_text):
         y,
         getTextWidth("{:.2f} V".format(voltage), 3) + 8,
         getTextHeight(size=3),
-        Colour.black,
+        BACKGROUND_COLOR,
     )
     LCD.write_text(
         "{:.2f} V".format(voltage),

@@ -8,6 +8,8 @@ from config import (
     PAGE_UPDATE_INTERVAL_MS,
     PAGE_FULL_UPDATE_INTERVAL_MS,
     DEV_MODE,
+    BACKGROUND_COLOR,
+    TEXT_COLOR,
 )
 from lib.colours import Colour
 from pages.combined_page import combined_page, combined_partial_update
@@ -20,7 +22,7 @@ from pages.time_page import getTimeSinceBoot
 
 class SubieOBD(object):
     def __init__(self):
-        self.version = "0.7.2"
+        self.version = "0.7.3"
         self.LCD = LCD_1inch28()
         self.LCD.set_bl_pwm(65535)
         self.Touch = Touch_CST816T(mode=0, LCD=self.LCD)
@@ -81,7 +83,7 @@ class SubieOBD(object):
             center - getTextWidth("V" + self.version, size=1) // 2,
             center + getTextHeight(size=1) // 2 + h,
             size=1,
-            color=Colour.white,
+            color=TEXT_COLOR,
         )
         self.LCD.show()
 
@@ -91,7 +93,7 @@ class SubieOBD(object):
             "Battery Voltage",
             y,
             size=2,
-            color=Colour.white,
+            color=TEXT_COLOR,
             max_width=200,
             dry_run=True,
         )
@@ -101,7 +103,7 @@ class SubieOBD(object):
         self, text, y, size=1, color=None, max_width=30, dry_run=False
     ):
         if color is None:
-            color = Colour.white
+            color = TEXT_COLOR
         text_width = getTextWidth(text, size)
         if text_width <= max_width:
             if not dry_run:
@@ -150,7 +152,7 @@ class SubieOBD(object):
                 combined_partial_update(self.LCD, self.write_centered_text)
 
     def clear(self):
-        self.LCD.fill(Colour.black)
+        self.LCD.fill(BACKGROUND_COLOR)
         self.LCD.show()
 
 

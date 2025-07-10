@@ -1,6 +1,6 @@
 from utils import getTextWidth, getTextHeight, center, wrap_text
 from sensors import getTemp
-from config import TEMP_COLD, TEMP_GOOD, TEMP_HIGH
+from config import TEMP_COLD, TEMP_GOOD, TEMP_HIGH, TEXT_COLOR, BACKGROUND_COLOR
 from lib.colours import Colour
 from icons.coolantTemp import draw_coolant_icon
 
@@ -26,7 +26,7 @@ def temp_page(LCD):
             center - getTextWidth(line, 2) // 2,
             y,
             size=2,
-            color=Colour.white,
+            color=TEXT_COLOR,
         )
         y += getTextHeight(2) + 4
 
@@ -48,7 +48,7 @@ def temp_page(LCD):
         center - getTextWidth("Swipe Up/Down", 1) // 2,
         200,
         size=1,
-        color=Colour.white,
+        color=TEXT_COLOR,
     )
     LCD.show()
 
@@ -69,7 +69,7 @@ def temp_partial_update(LCD):
         100,
         240,  # or use size if imported
         getTextHeight(size=3),
-        Colour.black,
+        BACKGROUND_COLOR,
     )
     LCD.write_text(
         "{:.1f} C".format(temp),

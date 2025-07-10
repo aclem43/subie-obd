@@ -1,7 +1,10 @@
+from lib.colours import Colour
+
 # Display settings
 DISPLAY_SIZE = 240
 DISPLAY_CENTER = DISPLAY_SIZE // 2
-BACKGROUND_COLOR = 0x0000  # Black
+BACKGROUND_COLOR = Colour.black
+TEXT_COLOR = Colour.white
 
 # Debounce and timing
 DEBOUNCE_MS = 500
@@ -9,7 +12,7 @@ PAGE_UPDATE_INTERVAL_MS = 150
 PAGE_FULL_UPDATE_INTERVAL_MS = 5000
 
 # Sensor simulation/dev mode
-DEV_MODE = True
+DEV_MODE = False
 
 # Temperature thresholds (Celsius)
 TEMP_COLD = 60

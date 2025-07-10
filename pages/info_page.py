@@ -1,10 +1,9 @@
 from utils import getTextWidth, center, wrap_text, getTextHeight
-from config import DEV_MODE
+from config import DEV_MODE, TEXT_COLOR, BACKGROUND_COLOR
 from lib.colours import Colour
 
 
 def info_page(LCD, version):
-    LCD.fill(Colour.black)
     # Use wrap_text for header
     header_lines = wrap_text("Subie OBD Info", size=2, max_width=200)
     y = 60
@@ -14,7 +13,7 @@ def info_page(LCD, version):
             center - getTextWidth(line, 2) // 2,
             y,
             size=2,
-            color=Colour.white,
+            color=TEXT_COLOR,
         )
         y += getTextHeight(2) + 4
 
@@ -37,13 +36,13 @@ def info_page(LCD, version):
         center - getTextWidth("Future Data:", 1) // 2,
         170,
         size=1,
-        color=Colour.white,
+        color=TEXT_COLOR,
     )
     LCD.write_text(
         "-------------------",
         center - getTextWidth("-------------------", 1) // 2,
         185,
         size=1,
-        color=Colour.white,
+        color=TEXT_COLOR,
     )
     LCD.show()
