@@ -3,17 +3,24 @@ from lib.Touch_CST816T import Touch_CST816T, Gesture_CST816T
 import time
 from utils import getTextWidth, getTextHeight, size, center
 from sensors import getTemp, getBattery
-from config import DEBOUNCE_MS, PAGE_UPDATE_INTERVAL_MS, PAGE_FULL_UPDATE_INTERVAL_MS
+from config import (
+    DEBOUNCE_MS,
+    PAGE_UPDATE_INTERVAL_MS,
+    PAGE_FULL_UPDATE_INTERVAL_MS,
+    DEV_MODE,
+)
 from lib.colours import Colour
 from pages.combined_page import combined_page, combined_partial_update
 from pages.temp_page import temp_page, temp_partial_update
 from pages.battery_page import battery_page, battery_partial_update
 from pages.info_page import info_page
+from pages.time_page import time_page, time_partial_update
+from pages.time_page import getTimeSinceBoot
 
 
 class SubieOBD(object):
     def __init__(self):
-        self.version = "0.7.1"
+        self.version = "0.7.2"
         self.LCD = LCD_1inch28()
         self.LCD.set_bl_pwm(65535)
         self.Touch = Touch_CST816T(mode=0, LCD=self.LCD)
@@ -21,6 +28,7 @@ class SubieOBD(object):
             lambda: temp_page(self.LCD),
             lambda: battery_page(self.LCD, self.write_centered_text),
             lambda: info_page(self.LCD, self.version),
+            lambda: time_page(self.LCD, self.write_centered_text),
             lambda: combined_page(self.LCD, self.write_centered_text),
         ]
         self.page_index = 0
@@ -126,16 +134,19 @@ class SubieOBD(object):
             self._last_page_index = self.page_index
             self.last_full_update = time.ticks_ms()
         current_time = time.ticks_ms()
-        if (current_time - self.last_full_update) > PAGE_FULL_UPDATE_INTERVAL_MS:
-            self.clear()
-            self.pages[self.page_index]()
-            self.last_full_update = current_time
+        if DEV_MODE:
+            if (current_time - self.last_full_update) > PAGE_FULL_UPDATE_INTERVAL_MS:
+                self.clear()
+                self.pages[self.page_index]()
+                self.last_full_update = current_time
         else:
             if self.page_index == 0:
                 temp_partial_update(self.LCD)
             elif self.page_index == 1:
                 battery_partial_update(self.LCD, self.write_centered_text)
             elif self.page_index == 3:
+                time_partial_update(self.LCD, self.write_centered_text)
+            elif self.page_index == 4:
                 combined_partial_update(self.LCD, self.write_centered_text)
 
     def clear(self):

@@ -11,6 +11,11 @@ from config import (
 from lib.colours import Colour
 from icons.coolantTemp import draw_coolant_icon
 from lib.LCD_1inch28 import LCD_1inch28
+from sensors import getTimeSinceBoot
+from pages.time_page import format_time
+
+
+topOffset = 25
 
 
 def combined_page(LCD, write_centered_text):
@@ -26,7 +31,7 @@ def combined_page(LCD, write_centered_text):
         color = Colour.green
 
     # Write centered text for header/status
-    y = 60
+    y = topOffset
     y = write_centered_text(
         "Battery Voltage", y, size=2, color=Colour.white, max_width=200
     )
@@ -44,12 +49,19 @@ def combined_page(LCD, write_centered_text):
     else:
         temp_color = Colour.red
 
-    # Write centered text for coolant temperature
     y = write_centered_text(
         "Coolant Temp", y + 20, size=2, color=Colour.white, max_width=200
     )
     y = write_centered_text(
         "{:.1f} C".format(temp), y, size=3, color=temp_color, max_width=200
+    )
+
+    y = write_centered_text(
+        format_time(getTimeSinceBoot()),
+        y + 20,
+        size=2,
+        color=Colour.white,
+        max_width=200,
     )
 
     LCD.write_text(
@@ -59,7 +71,6 @@ def combined_page(LCD, write_centered_text):
         size=1,
         color=Colour.white,
     )
-    # Show the changes on the LCD
     LCD.show()
 
 
@@ -72,7 +83,7 @@ def combined_partial_update(LCD: LCD_1inch28, write_centered_text):
     else:
         color = Colour.green
 
-    y = 60
+    y = topOffset
 
     y += getTextHeight(2) + getTextHeight(2) + 8
     LCD.rect(0, y, 240, getTextHeight(3), BACKGROUND_COLOR, True)
@@ -93,6 +104,12 @@ def combined_partial_update(LCD: LCD_1inch28, write_centered_text):
     LCD.rect(0, y, 240, getTextHeight(3), BACKGROUND_COLOR, True)
     y = write_centered_text(
         "{:.1f} C".format(temp), y, size=3, color=temp_color, max_width=200
+    )
+
+    y += 20
+    LCD.rect(0, y, 240, getTextHeight(2), BACKGROUND_COLOR, True)
+    y = write_centered_text(
+        format_time(getTimeSinceBoot()), y, size=2, color=Colour.white, max_width=200
     )
 
     LCD.show()

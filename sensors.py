@@ -1,5 +1,6 @@
 from machine import ADC
 from config import DEV_MODE
+import time
 
 lastTemp = 0.0
 lastVolt = 12.0
@@ -34,3 +35,7 @@ def getBattery():
     adc_value = sensor.read_u16()
     volt = (3.3 / 65535) * adc_value * (15.0 / 3.3)  # Example scaling
     return volt
+
+
+def getTimeSinceBoot():
+    return time.ticks_ms() / 1000.0  # Return time in seconds since boot
